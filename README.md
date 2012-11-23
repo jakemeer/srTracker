@@ -49,13 +49,11 @@ Array (
 		[url] => http://www.swedrock.se/klader/t-shirt/watain-lawless-fire-ts-1.html 
 		[img] => http://www.swedrock.se/shop/thumbnails/shop/23473/art73/h1949/14171949-origpic-f53189.jpg_0_3.33333_100_93.3333_119_111_75.jpg 
 	) 
-
 	[1] => Array ( 
 		[title] => Behexen - Nightside Emanations [TS] 
 		[url] => http://www.swedrock.se/klader/t-shirt/behexen-nightside-emanations-ts.html 
 		[img] => http://www.swedrock.se/shop/thumbnails/shop/23473/art73/h6858/14106858-origpic-86e6d4.jpg_26.41_0_47.18_100_119_111_75.jpg 
 	) 
-
 	[2] => Array ( 
 		[title] => Setherial - Enemy Of Creation [TS] 
 		[url] => http://www.swedrock.se/klader/t-shirt/setherial-enemy-of-creation-ts.html 
