@@ -1,6 +1,9 @@
 # srTracker
 Ett enkelt API som är till för att hämta information om nyinkomna produkter hos Swedrock från deras webbshop (http://www.swedrock.se/). 
-Informationen som tillsammans utgör en produkt är produktens titel, länk och bild-länk. 
+Informationen som tillsammans utgör en produkt är:
+- produktens titel
+- url till produkten hos Swedrock.se
+- src från produktens tillhörande img
 
 # Funktionalitet
 Hämta alla nya CD's
