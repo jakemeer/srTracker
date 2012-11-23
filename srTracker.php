@@ -1,4 +1,5 @@
 <?php
+//Helper class
 class Item {
 	private $title;
 	private $url;
@@ -20,13 +21,13 @@ class Item {
 		return $this->img;
 	}
 }
+//srTracker class
 class srTracker {
 	private $host;
 	private $username;
 	private $password;
 	private $database;
 
-	//Konstruktor
 	function __construct($host, $username, $password, $database) {
 		$this->host = $host;
 		$this->username = $username;
@@ -41,10 +42,10 @@ class srTracker {
 			$this->generateTables($connection);
 		}
 	}
-	//Metoder
-
+	
+	//Methods
 	function generateMysql($host, $username, $password, $database) {
-		//Valt mysql eftersom ingen data tas emot från formulär etc.
+
 		@$connection = mysql_connect($host, $username, $password);
 		if (!$connection) {
 			return FALSE;
@@ -59,7 +60,7 @@ class srTracker {
 		if(empty($items) || !isset($items)) {
 			return FALSE;
 		}
-		//Sätta in rader i tabell
+		//Insert rows in table
 		foreach($items as $item) {
 			$title = $item->Title();
 			$url = $item->Url();
@@ -76,7 +77,7 @@ class srTracker {
 		$sql = "SELECT * FROM cd";
 		$result = mysql_query($sql, $connection);
 		if(!$result) {
-			//Skapa tabeller
+			//Create tables
 			//cd
 			$sqlcd = "CREATE TABLE cd
 			(
@@ -150,7 +151,7 @@ class srTracker {
 			mysql_query($sqllu, $connection);
 			mysql_close($connection);
 		}
-		//Om det redan finns tabeller gör vi inget
+		//If table already exists
 		else {
 			mysql_close($connection);
 			return FALSE;
@@ -162,7 +163,7 @@ class srTracker {
 		curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
         curl_setopt($curl, CURLOPT_TIMEOUT, 2);
 		$html = curl_exec($curl);
-		//konverterar html-entiteter till utf-8
+		//converts html-entiteter to utf-8
 		$html = @mb_convert_encoding($html, 'HTML-ENTITIES', 'utf-8'); 
 		curl_close($curl);
 		return $html;		
@@ -189,51 +190,50 @@ class srTracker {
 		}
 	}
 	function extractData($nodes, $item) {
-		//Variablar
+		//Variables
 		$titles = array();
 		$urls = array();
 		$images = array();
 		$result = array();
 		
-		//Hämta information om titel och url
+		//Get information about title and url
 		foreach($nodes as $node) {
-			//Om det är en a-tag
+			//a-tag
 			if($node->nodeName == 'a') {
-				//Om a tagen har en klass och det är klassen gridArticleName
+				//If a-tag has class with name gridArticleName
 				if(($node->hasAttribute('class')) && ($node->getAttribute('class') == 'gridArticleName')) {
-					//Hämta typen av item (cd/lp/ts/ls/hd)
+					//Get type (cd/lp/ts/ls/hd)
 					$explode = explode('[', $node->nodeValue);
-					//Ta bort ]
+					//Remove unwanted letter
 					$typ = substr_replace($explode[1] ,"",-1);											
-					//Kolla om typen stämmer med det vi vill ha 
+					//Check if its the item we wanted
 					if(strpos(strtolower($typ), $item) !== false) {
-						//Spara alla titlar till array 'titles'
+						//Save all titles to array
 						array_push($titles, $node->nodeValue);
-						//Spara alla urls till array 'urls'
+						//Save all urls to array
 						array_push($urls, "http://www.swedrock.se".$node->getAttribute('href'));
 					}
 				}
 			}							 						
 		}
-		//Alt attributet i img tagen är identisk med titeln på itemet
+		//Get information about img
 		foreach($nodes as $node) {
-			//Hämta ut img
-			//Om det är en img-tag
+			//img-tag
 			if($node->nodeName == 'img') {
-				//Om img tagen har en klass och det är klassen gridArticleImage
+				//If img-tag has class with name gridArticleImage
 				if(($node->hasAttribute('class')) && ($node->getAttribute('class') == 'gridArticleImage')) {
-					//Hämta ut rätt img baserat på titles arrayen
+					//Store correct img-url depending on titles array
 					foreach($titles as $title) {
-						//Om titeln stämmer med img tagens alt attribut
+						//If title is the same as the alt-attribute
 						if($title == $node->getAttribute('alt')) {
-							//Spara alla img-urls till array 'images'
+							//Save to array
 							array_push($images, $node->getAttribute('src'));
 						}
 					}
 				}
 			}							 						
 		}
-		//Returnera resultat som array (om det finns något resultat)
+		//If result is given return it as array
 		if(!empty($titles)) {
 			for($i = 0; $i < count($titles); $i++) {
 				$item = new Item($titles[$i], $urls[$i], $images[$i]);
@@ -248,16 +248,16 @@ class srTracker {
 	function getItems($item) {
 		//DBConnection
 		$connection = $this->generateMysql($this->host, $this->username, $this->password, $this->database);
-		//Dagens datum
+		//Todays date
 		$now = date('Y-m-d');			
-		//Om det är första gången funktionen körs
+		//Firsttime run
 		$sql = "SELECT date FROM lastUpdate WHERE item='".$item."'";
 		$result = mysql_query($sql, $connection);
 		
 		if(mysql_num_rows($result) < 1) {	
-			//Hämta HTML med curl
+			//Get html with cURL
 			$html = $this->getHtml();
-			//Skapa nytt DOM dokument för att hantera HTML-datat lättare
+			//Create new domDocument for making it more manageable
 			$dom = new DOMDocument();
 			@$dom->loadHTML($html);
 			$nodes = $dom->getElementsByTagName('*');
@@ -269,10 +269,10 @@ class srTracker {
 			else {
 				return FALSE;
 			}
-			//Hämta ur DBn
+			//Fetch from DB
 			$resultat = $this->getFromDB($item);
 			mysql_close($connection);
-			//Felhantering
+			//Errorhandling
 			if($resultat!== FALSE) {
 				return $resultat;
 			}
@@ -280,16 +280,14 @@ class srTracker {
 				return FALSE;
 			}
 		}
-		//Om det inte är första gången
+		//If its not firsttime run
 		else {
-			//Kolla om datumet är annat än dagens (isåfall vill vi uppdatera DBn)
+			//Check if its another date than todays (in that case update DB)
 			while($row = mysql_fetch_array($result)) {
 				$oldDate = date('Y-m-d', strtotime($row['date']));
 
 				if($now > $oldDate) {
-					//Hämta HTML med curl
 					$html = $this->getHtml();
-					//Skapa nytt DOM dokument för att hantera HTML-datat lättare
 					$dom = new DOMDocument();
 					@$dom->loadHTML($html);
 					$nodes = $dom->getElementsByTagName('*');
@@ -298,10 +296,10 @@ class srTracker {
 						$sql = "UPDATE lastUpdate SET date='".(string)$now."' WHERE item='".$item."'";
 						mysql_query($sql, $connection);
 					}
-					//Hämta ur DBn
+
 					$resultat = $this->getFromDB($item);
 					mysql_close($connection);
-					//Felhantering
+
 					if($resultat !== FALSE) {
 						return $resultat;
 					}
@@ -309,12 +307,12 @@ class srTracker {
 						return FALSE;
 					}									
 				}
-				//Om det är samma dag vill vi hämta data från DBn
+				//If its the same day (just fetch data from DB)
 				else {					
-					//Hämta ur DBn
+
 					$resultat = $this->getFromDB($item);
 					mysql_close($connection);
-					//Felhantering
+
 					if($resultat !== FALSE) {
 						return $resultat;
 					}
