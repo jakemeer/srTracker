@@ -35,7 +35,7 @@ require_once('srTracker.php');
 
 $sr = new srTracker('host', 'username', 'password', 'database');
 
-$cd = $sr->getAll('cd'); 
+$cd = $sr->getAll('cd'); \n 
 $lp = $sr->getAll('lp'); 
 $tshirts = $sr->getAll('ts'); 
 $longsleeves = $sr->getAll('ls'); 
