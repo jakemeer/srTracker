@@ -1,5 +1,5 @@
 # srTracker
-Ett API som är till för att hämta information om nyinkomna produkter hos Swedrock från deras webbshop (http://www.swedrock.se/). 
+Ett enkelt API som är till för att hämta information om nyinkomna produkter hos Swedrock från deras webbshop (http://www.swedrock.se/). 
 Informationen som tillsammans utgör en produkt är produktens titel, länk och bild-länk. 
 
 # Funktionalitet
@@ -67,5 +67,5 @@ try {
    $sr = new srTracker('host', 'WRONGusername', 'password', 'database');
 
 } catch (Exception $e) {
-  //Will print 'Wrong parameter'
+   print $e->getMessage(); //Will print 'Wrong parameter'
 }
