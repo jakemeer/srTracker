@@ -292,6 +292,10 @@ class srTracker {
 					@$dom->loadHTML($html);
 					$nodes = $dom->getElementsByTagName('*');
 					$items = $this->extractData($nodes, $item);	
+					//Clear old data
+					$sql = "TRUNCATE TABLE ".$item;
+					mysql_query($sql, $connection);
+					//Insert new data
 					if($this->insertItemsIntoDB($item, $items, $connection) !== FALSE) {
 						$sql = "UPDATE lastUpdate SET date='".(string)$now."' WHERE item='".$item."'";
 						mysql_query($sql, $connection);
