@@ -1,5 +1,5 @@
 # srTracker
-Ett API som är till för att hämta information om nyinkomna produkter hos Swedrock från deras webbshop ([http://www.swedrock.se/](http://www.swedrock.se/)). 
+Ett API som är till för att hämta information om nyinkomna produkter hos Swedrock från deras webbshop (http://www.swedrock.se/). 
 Informationen som tillsammans utgör en produkt är produktens titel, länk och bild-länk. 
 
 # Funktionalitet
