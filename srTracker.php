@@ -57,7 +57,7 @@ class srTracker implements iSrTracker{
 				return FALSE;
 			}
 			//Fetch from DB
-			$resultat = DBConnection::getFromDB($item, DBConnection::generateMysql($this->host, $this->username, $this->password, $this->database));
+			$resultat = DBConnection::getFromDB($item, $connection);
 			mysql_close($connection);
 			//Errorhandling
 			if($resultat!== FALSE) {
@@ -88,7 +88,7 @@ class srTracker implements iSrTracker{
 						mysql_query($sql, $connection);
 					}
 
-					$resultat = DBConnection::getFromDB($item, DBConnection::generateMysql($this->host, $this->username, $this->password, $this->database));
+					$resultat = DBConnection::getFromDB($item, $connection);
 					mysql_close($connection);
 
 					if($resultat !== FALSE) {
@@ -101,7 +101,7 @@ class srTracker implements iSrTracker{
 				//If its the same day (just fetch data from DB)
 				else {					
 
-					$resultat = DBConnection::getFromDB($item, DBConnection::generateMysql($this->host, $this->username, $this->password, $this->database));
+					$resultat = DBConnection::getFromDB($item, $connection);
 					mysql_close($connection);
 
 					if($resultat !== FALSE) {
