@@ -1,5 +1,4 @@
 <?php
-//Helper class
 class Item {
 	private $title;
 	private $url;
