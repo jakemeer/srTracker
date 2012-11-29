@@ -34,9 +34,12 @@ class DBConnection {
 			$title = $item->Title();
 			$url = $item->Url();
 			$img = $item->Img();
-
+			//Fix for potential singlequotes in the title
+			if(strpos($title, "'") !== false) {
+				$title = str_replace("'", "''", $title);
+			}
 			$sql = "INSERT INTO ".$table." VALUES ('', '".$title."', '".$url."', '".$img."')";
-			$result = mysql_query($sql, $connection) or die ("Error in query: $query. ".mysql_error());
+			$result = mysql_query($sql, $connection) or die ("Error in query: $sql. ".mysql_error());
 			if($result === FALSE) {
 				return FALSE;
 			}		
