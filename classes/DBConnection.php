@@ -1,28 +1,24 @@
 <?php
 class DBConnection {
-	/** Public static function for generating mysql
+	/** Public static function for generating mysqli
 	* @param string - $hostname
 	* @param string - $username
 	* @param string - $password
 	* @param string - $database
-	* @return MySQL link identifier or false
+	* @return MySQLi link identifier or false
 	 */
-	public static function generateMysql($host, $username, $password, $database) {
-
-		@$connection = mysql_connect($host, $username, $password);
-		if (!$connection) {
+	public static function generateMysqli($host, $username, $password, $database) {
+		$connection = new mysqli($host, $username, $password, $database);
+		if(mysqli_connect_errno()) {
 			return FALSE;
 		}
-		else {
-			mysql_select_db($database, $connection);
-			mysql_set_charset("UTF8", $connection);
-			return $connection;
-		}
+		$connection->set_charset("utf8");
+		return $connection;
 	}
 	/** Public static function for inserting items into database
 	* @param string - $table
 	* @param array - $items
-	* @param MySQL link identifier - $connection
+	* @param MySQLi link identifier - $connection
 	* @return void or false
 	 */
 	public static function insertItemsIntoDB($table, $items, $connection) {
@@ -38,21 +34,29 @@ class DBConnection {
 			if(strpos($title, "'") !== false) {
 				$title = str_replace("'", "''", $title);
 			}
-			$sql = "INSERT INTO ".$table." VALUES ('', '".$title."', '".$url."', '".$img."')";
-			$result = mysql_query($sql, $connection) or die ("Error in query: $sql. ".mysql_error());
-			if($result === FALSE) {
+			$sql = "INSERT INTO ".$table." VALUES (?, ?, ?, ?)";
+			$stmt = $connection->prepare($sql);
+			$stmt->bind_param('isss', $id, $title, $url, $img);
+			$id = "";
+			if(!$stmt->execute()) {
+				//$stmt->close();			
+				//$connection->close();
 				return FALSE;
-			}		
+			}
+			$stmt->free_result();
 		}	
 	}
 	/** Public static function for creating necessary tables
-	* @param MySQL link identifier - $connection
+	* @param MySQLi link identifier - $connection
 	* @return void or false
 	 */
 	public static function generateTables($connection) {
-		$sql = "SELECT * FROM cd";
-		$result = mysql_query($sql, $connection);
-		if(!$result) {
+		//Tables exists
+		if($result = $connection->query("SELECT * FROM cd")) {
+			return TRUE;
+		}
+		//Tables doesnt exist
+		else {
 			//Create tables
 			//cd
 			$sqlcd = "CREATE TABLE cd
@@ -119,31 +123,25 @@ class DBConnection {
 			)
 			CHARSET=utf8
 			";
-			mysql_query($sqlcd, $connection);
-			mysql_query($sqllp, $connection);
-			mysql_query($sqlls, $connection);
-			mysql_query($sqlts, $connection);
-			mysql_query($sqlhd, $connection);
-			mysql_query($sqllu, $connection);
-			mysql_close($connection);
-		}
-		//If table already exists
-		else {
-			mysql_close($connection);
-			return FALSE;
+			$connection->query($sqlcd);
+			$connection->query($sqllp);
+			$connection->query($sqlls);
+			$connection->query($sqlts);
+			$connection->query($sqlhd);
+			$connection->query($sqllu);
 		}
 	}
 	/** public static function for fetching from database
 	* @param string - $table
-	* @param MySQL link identifier - $connection
+	* @param MySQLi link identifier - $connection
 	* @return array or false
 	 */
 	public static function getFromDB($table, $connection) {
 		$resultat = array();
 	
 		$sql = "SELECT * FROM ".$table;
-		$result = mysql_query($sql, $connection);
-		while($row = mysql_fetch_array($result)) {
+		$result = $connection->query($sql);
+		while($row = $result->fetch_array(MYSQLI_ASSOC)) {
 			$item = array(
 				"title" => $row['title'],
 				"url" => $row['url'],

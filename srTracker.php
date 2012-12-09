@@ -17,12 +17,14 @@ class srTracker implements iSrTracker{
 		$this->password = $password;
 		$this->database = $database;
 		
-		$connection = DBConnection::generateMysql($this->host, $this->username, $this->password, $this->database);
+		$connection = DBConnection::generateMysqli($this->host, $this->username, $this->password, $this->database);
 		if($connection === FALSE) {
 			throw new Exception('[User-error]Wrong parameter: please make sure that hostname, username, password and database values are correct.');
 		}
 		else {
-			DBConnection::generateTables($connection);
+			if(DBConnection::generateTables($connection) === FALSE) {
+				throw new Exception('[api-error]Could not generate tables.');
+			}
 		}
 	}	
 	
@@ -34,14 +36,16 @@ class srTracker implements iSrTracker{
 	 */
 	private function getItems($item) {
 		//DBConnection
-		$connection = DBConnection::generateMysql($this->host, $this->username, $this->password, $this->database);
+		$connection = DBConnection::generateMysqli($this->host, $this->username, $this->password, $this->database);
 		//Todays date
 		$now = date('Y-m-d');			
 		//Firsttime run
-		$sql = "SELECT date FROM lastUpdate WHERE item='".$item."'";
-		$result = mysql_query($sql, $connection);
-		
-		if(mysql_num_rows($result) < 1) {	
+		$sql = "SELECT date FROM lastUpdate WHERE item = (?)";
+		$stmt = $connection->prepare($sql);
+		$stmt->bind_param('s', $item);
+		$stmt->execute();
+		$result = $stmt->get_result();
+		if(mysqli_num_rows($result) < 1) {	
 			//Get html with cURL
 			$html =	DataHandler::getHtml();
 			//Create new domDocument for making it more manageable
@@ -50,15 +54,23 @@ class srTracker implements iSrTracker{
 			$nodes = $dom->getElementsByTagName('*');
 			$items = DataHandler::extractData($nodes, $item);	
 			if(DBConnection::insertItemsIntoDB($item, $items, $connection) !== FALSE) {
-				$sql = "INSERT INTO lastUpdate VALUES ('', '".$item."', '".(string)$now."')";
-				mysql_query($sql, $connection);
+				$query = "INSERT INTO lastUpdate VALUES (?, ?, ?)";
+				$statement = $connection->prepare($query);
+				$statement->bind_param('iss', $id, $item, $date);
+				$id = "";
+				$date = (string)$now;
+				if(!$statement->execute()) {
+				//	$statement->close();			
+				//	$connection->close();
+					return FALSE;
+				}
 			}
 			else {
 				return FALSE;
 			}
 			//Fetch from DB
 			$resultat = DBConnection::getFromDB($item, $connection);
-			mysql_close($connection);
+			//$connection->close();
 			//Errorhandling
 			if($resultat!== FALSE) {
 				return $resultat;
@@ -70,7 +82,7 @@ class srTracker implements iSrTracker{
 		//If its not firsttime run
 		else {
 			//Check if its another date than todays (in that case update DB)
-			while($row = mysql_fetch_array($result)) {
+			while($row = $result->fetch_assoc()) {
 				$oldDate = date('Y-m-d', strtotime($row['date']));
 
 				if($now > $oldDate) {
@@ -81,16 +93,21 @@ class srTracker implements iSrTracker{
 					$items = DataHandler::extractData($nodes, $item);	
 					//Clear old data
 					$sql = "TRUNCATE TABLE ".$item;
-					mysql_query($sql, $connection);
+					$connection->query($sql);
 					//Insert new data
 					if(DBConnection::insertItemsIntoDB($item, $items, $connection) !== FALSE) {
-						$sql = "UPDATE lastUpdate SET date='".(string)$now."' WHERE item='".$item."'";
-						mysql_query($sql, $connection);
+						$query = "UPDATE lastUpdate SET date = (?) WHERE item = (?)";
+						$statement = $connection->prepare($query);
+						$statement->bind_param('ss', $date, $item);
+						$date = (string)$now;
+						if(!$statement->execute()) {
+						//	$statement->close();			
+						//	$connection->close();
+							return FALSE;
+						}
 					}
-
 					$resultat = DBConnection::getFromDB($item, $connection);
-					mysql_close($connection);
-
+					//$connection->close();
 					if($resultat !== FALSE) {
 						return $resultat;
 					}
@@ -102,8 +119,7 @@ class srTracker implements iSrTracker{
 				else {					
 
 					$resultat = DBConnection::getFromDB($item, $connection);
-					mysql_close($connection);
-
+					//$connection->close();
 					if($resultat !== FALSE) {
 						return $resultat;
 					}
@@ -173,7 +189,6 @@ class srTracker implements iSrTracker{
 		else {
 			throw new Exception('[User-error]Wrong parameter, getAll-function: Only "cd", "ts", "lp", "ls" and "hd" allowed.');
 		}
-	
 	}
 }
 ?>
