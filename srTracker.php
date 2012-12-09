@@ -19,7 +19,7 @@ class srTracker implements iSrTracker{
 		
 		$connection = DBConnection::generateMysql($this->host, $this->username, $this->password, $this->database);
 		if($connection === FALSE) {
-			throw new Exception('Wrong parameter');
+			throw new Exception('[User-error]Wrong parameter: please make sure that hostname, username, password and database values are correct.');
 		}
 		else {
 			DBConnection::generateTables($connection);
@@ -127,7 +127,7 @@ class srTracker implements iSrTracker{
 				return $result;
 			}
 			else {
-				throw new Exception('Error getting CDs');
+				throw new Exception('[api-error]Error getting CDs');
 			}
 		}
 		//LP
@@ -137,7 +137,7 @@ class srTracker implements iSrTracker{
 				return $result;
 			}
 			else {
-				throw new Exception('Error getting LPs');
+				throw new Exception('[api-error]Error getting LPs');
 			}
 		}
 		//TS
@@ -147,7 +147,7 @@ class srTracker implements iSrTracker{
 				return $result;
 			}
 			else {
-				throw new Exception('Error getting TSHIRTs');
+				throw new Exception('[api-error]Error getting TSHIRTs');
 			}
 		}
 		//LS
@@ -157,7 +157,7 @@ class srTracker implements iSrTracker{
 				return $result;
 			}
 			else {
-				throw new Exception('Error getting LONGSLEEVEs');
+				throw new Exception('[api-error]Error getting LONGSLEEVEs');
 			}
 		}
 		//HD
@@ -167,11 +167,11 @@ class srTracker implements iSrTracker{
 				return $result;
 			}
 			else {
-				throw new Exception('Error getting HOODs');
+				throw new Exception('[api-error]Error getting HOODs');
 			} 
 		}
 		else {
-			throw new Exception('Wrong parameter');
+			throw new Exception('[User-error]Wrong parameter, getAll-function: Only "cd", "ts", "lp", "ls" and "hd" allowed.');
 		}
 	
 	}
